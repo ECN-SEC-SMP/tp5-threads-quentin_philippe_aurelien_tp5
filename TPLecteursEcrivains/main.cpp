@@ -4,22 +4,37 @@
 
 int ressourcePartagee;
 
+Semaphore sem1(1);
+int nbLecteurs = 0;
+
 void lecteur(int numLecteur){
   for (int i = 0; i < 4; i++){
+    sem1.P(1);
+    nbLecteurs++;
+    sem1.V(1);
+
     std::cout << "Lecteur n° " << numLecteur << " en cours " << endl;
     this_thread::sleep_for(chrono::milliseconds(rand() % 20000) );
     std::cout << "        Valeur lue = " << ressourcePartagee << "  " << endl;
+
+    sem1.P(1);
+    nbLecteurs--;
+    sem1.V(1);
   }
 }
 
 void ecrivain(int numEcrivain){
   int x;
   for (int i = 0; i < 4; i++){
-    std::cout << "Ecrivain n° " << numEcrivain << " en cours " << endl;
-    x = ressourcePartagee;
-    this_thread::sleep_for(chrono::milliseconds(rand() % 20000) );
-    std::cout << "valeur à incrémenter de la ressourcePartagee = " << x << "  " << endl;
-    ressourcePartagee = x+1 ;
+    sem1.P(1);
+    if (nbLecteurs == 0){
+      std::cout << "Ecrivain n° " << numEcrivain << " en cours " << endl;
+      x = ressourcePartagee;
+      this_thread::sleep_for(chrono::milliseconds(rand() % 20000) );
+      std::cout << "valeur à incrémenter de la ressourcePartagee = " << x << "  " << endl;
+      ressourcePartagee = x+1 ;
+    }
+    sem1.V(1);
   }
 }
 
